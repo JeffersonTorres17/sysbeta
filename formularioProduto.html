@@ -1,0 +1,144 @@
+<html>
+<body>
+    <h3>PDV SYS BETA</h3>
+
+    <label>Cliente:</label>
+    <select id="cliente" onchange="atualizarCliente()">
+        <option value="">Selecione...</option>
+    </select><br><br>
+
+    <label>Telefone:</label>
+    <input type="text" id="telefone" readonly><br><br>
+
+    <label>Endereço:</label>
+    <input type="text" id="endereco" readonly><br><br>
+
+    <label>Saldo Devedor:</label>
+    <input type="text" id="saldo" readonly><br><br>
+
+    <label>Produto:</label>
+    <select id="produto" onchange="atualizarPreco()">
+        <option value="">Selecione...</option>
+    </select><br><br>
+
+    <label>Preço Unitário:</label>
+    <input type="text" id="preco" readonly><br><br>
+
+    <label>Quantidade:</label>
+    <input type="number" id="quantidade" oninput="calcularTotal()"><br><br>
+
+    <label>Total:</label>
+    <input type="text" id="total" readonly><br><br>
+
+<label>Forma de Pagamento 1:</label>
+<select id="formaPagamento1">
+    <option value="">Selecione...</option>
+    <option value="PIX">PIX</option>
+    <option value="DINHEIRO">Dinheiro</option>
+    <option value="CARTAO">Cartão</option>
+    <option value="PRAZO">Prazo</option>
+</select><br><br>
+
+<label>Valor Pago:</label>
+<input type="text" id="valorPago1" oninput="calcularTroco()"><br><br>
+
+<label>Forma de Pagamento 2:</label>
+<select id="formaPagamento2">
+    <option value="">Selecione...</option>
+    <option value="PIX">PIX</option>
+    <option value="DINHEIRO">Dinheiro</option>
+    <option value="CARTAO">Cartão</option>
+    <option value="PRAZO">Prazo</option>
+</select><br><br>
+
+<label>Valor Pago:</label>
+<input type="text" id="valorPago2" oninput="calcularTroco()"><br><br>
+
+  <button onclick="salvar()">Salvar</button>
+
+    <script>
+        var clientes = [];
+        var produtos = [];
+
+        function carregarDados() {
+            google.script.run.withSuccessHandler(function(dados) {
+                clientes = dados;
+                var selectCliente = document.getElementById("cliente");
+                clientes.forEach(cliente => {
+                    var option = document.createElement("option");
+                    option.value = cliente.nome;
+                    option.textContent = cliente.nome;
+                    selectCliente.appendChild(option);
+                });
+            }).buscarClientes();
+
+            google.script.run.withSuccessHandler(function(dados) {
+                produtos = dados;
+                var selectProduto = document.getElementById("produto");
+                produtos.forEach(produto => {
+                    var option = document.createElement("option");
+                    option.value = produto.nome;
+                    option.textContent = produto.nome;
+                    selectProduto.appendChild(option);
+                });
+            }).buscarProdutos();
+        }
+
+        function atualizarCliente() {
+            var nomeSelecionado = document.getElementById("cliente").value;
+            var cliente = clientes.find(c => c.nome === nomeSelecionado);
+
+            if (cliente) {
+                document.getElementById("telefone").value = cliente.telefone;
+                document.getElementById("endereco").value = cliente.endereco;
+                document.getElementById("saldo").value = cliente.saldo;
+            } else {
+                document.getElementById("telefone").value = "";
+                document.getElementById("endereco").value = "";
+                document.getElementById("saldo").value = "";
+            }
+        }
+
+        function atualizarPreco() {
+            var nomeSelecionado = document.getElementById("produto").value;
+            var produto = produtos.find(p => p.nome === nomeSelecionado);
+
+            if (produto) {
+                document.getElementById("preco").value = produto.preco;
+                calcularTotal();
+            } else {
+                document.getElementById("preco").value = "";
+            }
+        }
+
+        function calcularTotal() {
+            var preco = parseFloat(document.getElementById("preco").value) || 0;
+            var quantidade = parseInt(document.getElementById("quantidade").value) || 0;
+            document.getElementById("total").value = (preco * quantidade).toFixed(2);
+        }
+
+         function salvar() {
+        var dados = {
+            cliente: document.getElementById("cliente").value,
+            telefone: document.getElementById("telefone").value,
+            endereco: document.getElementById("endereco").value,
+            saldo: document.getElementById("saldo").value,
+            produto: document.getElementById("produto").value,
+            preco: document.getElementById("preco").value,
+            quantidade: document.getElementById("quantidade").value,            
+            formaPagamento1: document.getElementById("formaPagamento1").value,
+            valorPago1: document.getElementById("valorPago1").value,
+            formaPagamento2: document.getElementById("formaPagamento2").value,
+            valorPago2: document.getElementById("valorPago2").value,
+            total: document.getElementById("total").value,
+            
+            
+        };
+        google.script.run.salvarProduto(dados);
+        google.script.host.close();
+    }
+
+        window.onload = carregarDados;
+    </script>
+</body>
+</html>
